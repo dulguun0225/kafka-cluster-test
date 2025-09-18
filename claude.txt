@@ -1,0 +1,529 @@
+# =============================================================================
+# Docker Compose - Ubuntu Server Containers for Kafka KRaft Cluster
+# =============================================================================
+
+version: '3.8'
+services:
+  kafka-node-1:
+    image: ubuntu:22.04
+    hostname: kafka-node-1
+    container_name: kafka-node-1
+    ports:
+      - "9092:9092"
+      - "9093:9093" 
+      - "9094:9094"
+      - "2181:22"    # SSH access (optional)
+    volumes:
+      - kafka-node-1-data:/opt/kafka-logs
+      - ./scripts:/opt/scripts
+      - ./config:/opt/kafka/config
+    networks:
+      kafka-network:
+        ipv4_address: 172.20.0.10
+    environment:
+      - NODE_ID=1
+      - CLUSTER_ID=q1Sh-9_ISia_zwGINzRvyQ
+    command: >
+      bash -c "
+      # Install required packages
+      apt-get update && 
+      apt-get install -y openjdk-11-jdk wget curl net-tools htop vim openssh-server &&
+      
+      # Download and install Kafka 4.0
+      cd /opt &&
+      wget -q https://downloads.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz &&
+      tar -xzf kafka_2.13-4.0.0.tgz &&
+      ln -sf kafka_2.13-4.0.0 kafka &&
+      
+      # Set up environment
+      echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> /root/.bashrc &&
+      echo 'export PATH=$$PATH:/opt/kafka/bin' >> /root/.bashrc &&
+      export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 &&
+      export PATH=$$PATH:/opt/kafka/bin &&
+      
+      # Create kafka user and directories
+      useradd -r -s /bin/false kafka &&
+      chown -R kafka:kafka /opt/kafka* &&
+      mkdir -p /opt/kafka-logs &&
+      chown kafka:kafka /opt/kafka-logs &&
+      
+      # Wait for other nodes to be ready
+      sleep 30 &&
+      
+      # Format storage and start Kafka
+      cd /opt/kafka &&
+      bin/kafka-storage.sh format -t q1Sh-9_ISia_zwGINzRvyQ -c config/server-node-1.properties &&
+      bin/kafka-server-start.sh config/server-node-1.properties
+      "
+    restart: unless-stopped
+
+  kafka-node-2:
+    image: ubuntu:22.04
+    hostname: kafka-node-2
+    container_name: kafka-node-2
+    ports:
+      - "9192:9092"
+      - "9193:9093"
+      - "9194:9094"
+      - "2182:22"    # SSH access (optional)
+    volumes:
+      - kafka-node-2-data:/opt/kafka-logs
+      - ./scripts:/opt/scripts
+      - ./config:/opt/kafka/config
+    networks:
+      kafka-network:
+        ipv4_address: 172.20.0.11
+    environment:
+      - NODE_ID=2
+      - CLUSTER_ID=q1Sh-9_ISia_zwGINzRvyQ
+    command: >
+      bash -c "
+      # Install required packages
+      apt-get update && 
+      apt-get install -y openjdk-11-jdk wget curl net-tools htop vim openssh-server &&
+      
+      # Download and install Kafka 4.0
+      cd /opt &&
+      wget -q https://downloads.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz &&
+      tar -xzf kafka_2.13-4.0.0.tgz &&
+      ln -sf kafka_2.13-4.0.0 kafka &&
+      
+      # Set up environment
+      echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> /root/.bashrc &&
+      echo 'export PATH=$$PATH:/opt/kafka/bin' >> /root/.bashrc &&
+      export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 &&
+      export PATH=$$PATH:/opt/kafka/bin &&
+      
+      # Create kafka user and directories
+      useradd -r -s /bin/false kafka &&
+      chown -R kafka:kafka /opt/kafka* &&
+      mkdir -p /opt/kafka-logs &&
+      chown kafka:kafka /opt/kafka-logs &&
+      
+      # Wait for other nodes to be ready
+      sleep 30 &&
+      
+      # Format storage and start Kafka
+      cd /opt/kafka &&
+      bin/kafka-storage.sh format -t q1Sh-9_ISia_zwGINzRvyQ -c config/server-node-2.properties &&
+      bin/kafka-server-start.sh config/server-node-2.properties
+      "
+    restart: unless-stopped
+
+  kafka-node-3:
+    image: ubuntu:22.04
+    hostname: kafka-node-3
+    container_name: kafka-node-3
+    ports:
+      - "9292:9092"
+      - "9293:9093"
+      - "9294:9094"
+      - "2183:22"    # SSH access (optional)
+    volumes:
+      - kafka-node-3-data:/opt/kafka-logs
+      - ./scripts:/opt/scripts
+      - ./config:/opt/kafka/config
+    networks:
+      kafka-network:
+        ipv4_address: 172.20.0.12
+    environment:
+      - NODE_ID=3
+      - CLUSTER_ID=q1Sh-9_ISia_zwGINzRvyQ
+    command: >
+      bash -c "
+      # Install required packages
+      apt-get update && 
+      apt-get install -y openjdk-11-jdk wget curl net-tools htop vim openssh-server &&
+      
+      # Download and install Kafka 4.0
+      cd /opt &&
+      wget -q https://downloads.apache.org/kafka/4.0.0/kafka_2.13-4.0.0.tgz &&
+      tar -xzf kafka_2.13-4.0.0.tgz &&
+      ln -sf kafka_2.13-4.0.0 kafka &&
+      
+      # Set up environment
+      echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> /root/.bashrc &&
+      echo 'export PATH=$$PATH:/opt/kafka/bin' >> /root/.bashdir &&
+      export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 &&
+      export PATH=$$PATH:/opt/kafka/bin &&
+      
+      # Create kafka user and directories
+      useradd -r -s /bin/false kafka &&
+      chown -R kafka:kafka /opt/kafka* &&
+      mkdir -p /opt/kafka-logs &&
+      chown kafka:kafka /opt/kafka-logs &&
+      
+      # Wait for other nodes to be ready
+      sleep 30 &&
+      
+      # Format storage and start Kafka
+      cd /opt/kafka &&
+      bin/kafka-storage.sh format -t q1Sh-9_ISia_zwGINzRvyQ -c config/server-node-3.properties &&
+      bin/kafka-server-start.sh config/server-node-3.properties
+      "
+    restart: unless-stopped
+
+networks:
+  kafka-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  kafka-node-1-data:
+  kafka-node-2-data:
+  kafka-node-3-data:
+
+# =============================================================================
+# Configuration Files (create these in ./config/ directory)
+# =============================================================================
+
+---
+# File: config/server-node-1.properties
+node.id=1
+process.roles=controller,broker
+
+# Controller quorum
+controller.quorum.voters=1@172.20.0.10:9093,2@172.20.0.11:9093,3@172.20.0.12:9093
+
+# Listeners
+listeners=CONTROLLER://0.0.0.0:9093,BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
+advertised.listeners=BROKER://172.20.0.10:9092,EXTERNAL://localhost:9094
+controller.listener.names=CONTROLLER
+inter.broker.listener.name=BROKER
+
+# Security
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,BROKER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+sasl.enabled.mechanisms=PLAIN
+sasl.mechanism.controller.protocol=PLAIN
+sasl.mechanism.inter.broker.protocol=PLAIN
+
+# JAAS configuration
+listener.name.broker.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="broker" \
+    password="broker-secret" \
+    user_broker="broker-secret" \
+    user_client="client-secret";
+
+listener.name.external.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="client" \
+    password="client-secret" \
+    user_client="client-secret" \
+    user_admin="admin-secret";
+
+# Log settings
+log.dirs=/opt/kafka-logs
+num.network.threads=8
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+# Topic defaults
+num.partitions=3
+default.replication.factor=3
+min.insync.replicas=2
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.cleanup.policy=delete
+
+# Kafka 4.0 Enhanced Configuration - Additional Settings
+metadata.log.max.record.bytes.between.snapshots=20971520
+metadata.log.max.snapshot.interval.ms=3600000
+
+# Enhanced controller settings for Kafka 4.0
+controller.socket.timeout.ms=30000
+controller.quorum.election.timeout.ms=1000
+controller.quorum.fetch.timeout.ms=2000
+
+# Improved broker settings
+replica.socket.timeout.ms=30000
+replica.fetch.max.bytes=1048576
+num.replica.fetchers=1
+
+# Enhanced security settings for SASL
+sasl.login.refresh.window.factor=0.8
+sasl.login.refresh.window.jitter=0.05
+sasl.login.refresh.min.period.seconds=60
+sasl.login.refresh.buffer.seconds=300
+
+# Other settings
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
+transaction.state.log.min.isr=2
+
+# Kafka 4.0 Enhanced Configuration - Additional Settings
+metadata.log.max.record.bytes.between.snapshots=20971520
+metadata.log.max.snapshot.interval.ms=3600000
+
+# Enhanced controller settings for Kafka 4.0
+controller.socket.timeout.ms=30000
+controller.quorum.election.timeout.ms=1000
+controller.quorum.fetch.timeout.ms=2000
+
+# Improved broker settings
+replica.socket.timeout.ms=30000
+replica.fetch.max.bytes=1048576
+num.replica.fetchers=1
+
+# Enhanced security settings for SASL
+sasl.login.refresh.window.factor=0.8
+sasl.login.refresh.window.jitter=0.05
+sasl.login.refresh.min.period.seconds=60
+sasl.login.refresh.buffer.seconds=300
+
+---
+# File: config/server-node-2.properties
+node.id=2
+process.roles=controller,broker
+
+# Controller quorum
+controller.quorum.voters=1@172.20.0.10:9093,2@172.20.0.11:9093,3@172.20.0.12:9093
+
+# Listeners
+listeners=CONTROLLER://0.0.0.0:9093,BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
+advertised.listeners=BROKER://172.20.0.11:9092,EXTERNAL://localhost:9194
+controller.listener.names=CONTROLLER
+inter.broker.listener.name=BROKER
+
+# Security
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,BROKER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+sasl.enabled.mechanisms=PLAIN
+sasl.mechanism.controller.protocol=PLAIN
+sasl.mechanism.inter.broker.protocol=PLAIN
+
+# JAAS configuration
+listener.name.broker.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="broker" \
+    password="broker-secret" \
+    user_broker="broker-secret" \
+    user_client="client-secret";
+
+listener.name.external.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="client" \
+    password="client-secret" \
+    user_client="client-secret" \
+    user_admin="admin-secret";
+
+# Log settings
+log.dirs=/opt/kafka-logs
+num.network.threads=8
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+# Topic defaults
+num.partitions=3
+default.replication.factor=3
+min.insync.replicas=2
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.cleanup.policy=delete
+
+# Kafka 4.0 Enhanced Configuration - Additional Settings
+metadata.log.max.record.bytes.between.snapshots=20971520
+metadata.log.max.snapshot.interval.ms=3600000
+
+# Enhanced controller settings for Kafka 4.0
+controller.socket.timeout.ms=30000
+controller.quorum.election.timeout.ms=1000
+controller.quorum.fetch.timeout.ms=2000
+
+# Improved broker settings
+replica.socket.timeout.ms=30000
+replica.fetch.max.bytes=1048576
+num.replica.fetchers=1
+
+# Enhanced security settings for SASL
+sasl.login.refresh.window.factor=0.8
+sasl.login.refresh.window.jitter=0.05
+sasl.login.refresh.min.period.seconds=60
+sasl.login.refresh.buffer.seconds=300
+
+---
+# File: config/server-node-3.properties
+node.id=3
+process.roles=controller,broker
+
+# Controller quorum
+controller.quorum.voters=1@172.20.0.10:9093,2@172.20.0.11:9093,3@172.20.0.12:9093
+
+# Listeners
+listeners=CONTROLLER://0.0.0.0:9093,BROKER://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094
+advertised.listeners=BROKER://172.20.0.12:9092,EXTERNAL://localhost:9294
+controller.listener.names=CONTROLLER
+inter.broker.listener.name=BROKER
+
+# Security
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,BROKER:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+sasl.enabled.mechanisms=PLAIN
+sasl.mechanism.controller.protocol=PLAIN
+sasl.mechanism.inter.broker.protocol=PLAIN
+
+# JAAS configuration
+listener.name.broker.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="broker" \
+    password="broker-secret" \
+    user_broker="broker-secret" \
+    user_client="client-secret";
+
+listener.name.external.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required \
+    username="client" \
+    password="client-secret" \
+    user_client="client-secret" \
+    user_admin="admin-secret";
+
+# Log settings
+log.dirs=/opt/kafka-logs
+num.network.threads=8
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+
+# Topic defaults
+num.partitions=3
+default.replication.factor=3
+min.insync.replicas=2
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.cleanup.policy=delete
+
+# Other settings
+offsets.topic.replication.factor=3
+transaction.state.log.replication.factor=3
+transaction.state.log.min.isr=2
+
+# =============================================================================
+# Setup and Usage Instructions
+# =============================================================================
+
+# 1. Create directory structure:
+mkdir -p kafka-cluster/{config,scripts}
+cd kafka-cluster
+
+# 2. Create the three server.properties files in config/ directory
+# (copy the content above for each node)
+
+# 3. Save docker-compose.yml with the configuration above
+
+# 4. Start the cluster:
+docker-compose up -d
+
+# 5. Check logs:
+docker-compose logs kafka-node-1
+docker-compose logs kafka-node-2  
+docker-compose logs kafka-node-3
+
+# 6. Connect to a container (like SSH to a VM):
+docker exec -it kafka-node-1 bash
+
+# 7. Inside container, check Kafka status:
+cd /opt/kafka
+bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092
+
+# =============================================================================
+# Kafka 4.0 Specific Features and Commands
+# =============================================================================
+
+# 1. Enhanced KRaft metadata management:
+bin/kafka-metadata-shell.sh --snapshot /opt/kafka-logs/__cluster_metadata-0/00000000000000000000.log
+
+# 2. Improved cluster information:
+bin/kafka-cluster.sh cluster-id --bootstrap-server localhost:9094 \
+  --command-config /opt/kafka/config/client.properties
+
+# 3. Enhanced topic management with new features:
+bin/kafka-topics.sh --create --topic test-topic-v4 \
+  --partitions 6 --replication-factor 3 \
+  --config min.insync.replicas=2 \
+  --config cleanup.policy=compact,delete \
+  --config compression.type=lz4 \
+  --bootstrap-server localhost:9094 \
+  --command-config /opt/kafka/config/client.properties
+
+# 4. New KRaft controller status commands:
+bin/kafka-features.sh --bootstrap-server localhost:9094 describe \
+  --command-config /opt/kafka/config/client.properties
+
+# 5. Enhanced broker registration information:
+bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092
+
+# 6. New tiered storage commands (if enabled):
+bin/kafka-remote-log-segments.sh --bootstrap-server localhost:9094 \
+  --describe --topic-partitions test-topic-0
+
+# 7. Improved consumer group management:
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9094 \
+  --group test-group --describe --verbose \
+  --command-config /opt/kafka/config/client.properties
+
+# 8. Enhanced transaction monitoring:
+bin/kafka-transactions.sh --bootstrap-server localhost:9094 describe \
+  --command-config /opt/kafka/config/client.properties
+
+# =============================================================================
+# Client Configuration File
+# =============================================================================
+
+# File: config/client.properties (for command-line tools)
+bootstrap.servers=localhost:9094,localhost:9194,localhost:9294
+security.protocol=SASL_PLAINTEXT
+sasl.mechanism=PLAIN
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="client" password="client-secret";
+
+# =============================================================================
+# Kafka 4.0 New Features and Improvements
+# =============================================================================
+
+# ✅ Enhanced KRaft mode (production ready)
+# ✅ Improved controller performance and stability
+# ✅ Better metadata management and snapshots
+# ✅ Enhanced SASL authentication mechanisms
+# ✅ Improved consumer rebalancing algorithms
+# ✅ Better partition reassignment tools
+# ✅ Enhanced transaction support
+# ✅ Improved tiered storage capabilities
+# ✅ Better observability and metrics
+# ✅ Enhanced security features
+
+# Key Kafka 4.0 Configuration Improvements:
+# - metadata.log.max.record.bytes.between.snapshots: Controls metadata snapshots
+# - controller.quorum.election.timeout.ms: Faster controller elections
+# - Enhanced SASL login refresh settings for better authentication
+# - Improved replica fetcher configurations
+# - Better socket timeout configurations
+
+# =============================================================================
+# Optional: Enhanced Setup with Systemd (more production-like)
+# =============================================================================
+
+# You can also create a version that uses systemd services:
+# File: scripts/setup-kafka-service.sh
+
+#!/bin/bash
+# Create systemd service file
+cat > /etc/systemd/system/kafka.service << EOF
+[Unit]
+Description=Apache Kafka
+Requires=network.target
+After=network.target
+
+[Service]
+Type=simple
+User=kafka
+ExecStart=/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server-node-\${NODE_ID}.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh
+Restart=on-abnormal
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start service
+systemctl daemon-reload
+systemctl enable kafka
+systemctl start kafka

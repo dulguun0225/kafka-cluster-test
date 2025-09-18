@@ -1,0 +1,65 @@
+services:
+  node1:
+    image: cust
+    hostname: node1
+    container_name: node1
+    environment:
+      - NODE_NAME=node1
+    ports:
+      - "19092:9092"
+    command: |
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t IJQB2x-YRLW1BcBALSckMQ -c /config/$${NODE_NAME}.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /config/$${NODE_NAME}.properties
+      "
+  node2:
+    image: cust
+    hostname: node2
+    container_name: node2
+    environment:
+      - NODE_NAME=node2
+    ports:
+      - "29092:9092"
+    command: |
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t IJQB2x-YRLW1BcBALSckMQ -c /config/$${NODE_NAME}.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /config/$${NODE_NAME}.properties
+      "
+  node3:
+    image: cust
+    hostname: node3
+    container_name: node3
+    environment:
+      - NODE_NAME=node3
+    ports:
+      - "39092:9092"
+    command: |
+      sh -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t IJQB2x-YRLW1BcBALSckMQ -c /config/$${NODE_NAME}.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /config/$${NODE_NAME}.properties
+      "
+  # ubuntu:
+  #   image: ubuntu:22.04
+  #   hostname: ubuntu
+  #   container_name: ubuntu
+  akhq:
+    # build:
+    #   context: .
+    image: tchiotludo/akhq
+    restart: unless-stopped
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "node1:9094,node2:9094,node3:9094"
+                security.protocol: SASL_PLAINTEXT
+                sasl.mechanism: PLAIN
+                sasl.jaas.config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="broker" password="broker-secret";'
+    ports:
+      - 8080:8080
+
+# RUN /opt/kafka/bin/kafka-storage.sh format -t IJQB2x-YRLW1BcBALSckMQ -c /config/node1.properties
+
+# /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server-node-\${NODE_ID}.properties
