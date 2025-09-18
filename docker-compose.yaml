@@ -58,8 +58,17 @@ services:
                 sasl.mechanism: PLAIN
                 sasl.jaas.config: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="broker" password="broker-secret";'
     ports:
-      - 8080:8080
-
+      - 9999:8080
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: poc
 # RUN /opt/kafka/bin/kafka-storage.sh format -t IJQB2x-YRLW1BcBALSckMQ -c /config/node1.properties
 
 # /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server-node-\${NODE_ID}.properties
